@@ -6,13 +6,14 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.vexsoftware.votifier.model.VotifierEvent;
 
-public class MonkeyVote extends JavaPlugin {
+public class MonkeyVote extends JavaPlugin implements Listener {
 
 	private final long TIME_VOTE = 36000L;
 
@@ -65,21 +66,16 @@ public class MonkeyVote extends JavaPlugin {
 
 	}
 
+	@EventHandler
 	public void onVote(VotifierEvent e) {
 
 		final String name = e.getVote().getUsername();
 
 		@SuppressWarnings("deprecation")
-		OfflinePlayer oplayer = Bukkit.getServer().getOfflinePlayer(name);
+		Player oplayer = Bukkit.getServer().getPlayer(name);
 
 		// player doesn't exist
 		if (oplayer == null) {
-			return;
-
-		}
-
-		// if the person isn't online, we don't give em time.
-		if (!oplayer.isOnline()) {
 			return;
 
 		}

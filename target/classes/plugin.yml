@@ -1,6 +1,6 @@
 name: MonkeyVote
 main: com.fawkes.plugin.monkeyvote.MonkeyVote
-version: 0.1
+version: 0.2
 commands:
   vote:
     description: Displays neat things about your IXP stats.
