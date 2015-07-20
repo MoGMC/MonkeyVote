@@ -5,5 +5,5 @@ commands:
   vote:
     description: Displays neat things about your IXP stats.
     usage: /ixp <playername>
-    permission: ixp.ixp
+    permission: monkeyvote.vote
     permission-message: You don't have permission to use this command.

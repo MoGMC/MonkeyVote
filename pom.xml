@@ -17,6 +17,14 @@
 			<version>1.7.9-R0.2</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.vexsoftware</groupId>
+			<artifactId>votifier</artifactId>
+			<version>1.9</version>
+			<scope>system</scope>
+			<systemPath>C:\_Development\_BukkitDev\1.8_Server_Spigot - Copy\plugins\votifier-1.9.jar</systemPath>
+			<type>jar</type>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
