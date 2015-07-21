@@ -1,9 +1,3 @@
 name: MonkeyVote
 main: com.fawkes.plugin.monkeyvote.MonkeyVote
 version: 0.2
-commands:
-  vote:
-    description: Displays neat things about your IXP stats.
-    usage: /ixp <playername>
-    permission: monkeyvote.vote
-    permission-message: You don't have permission to use this command.
