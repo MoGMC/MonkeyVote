@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,9 +17,9 @@ import com.vexsoftware.votifier.model.VotifierEvent;
 
 public class MonkeyVote extends JavaPlugin implements Listener {
 
-	private final long TIME_VOTE = 36000L;
+	// private final long TIME_VOTE = 36000L;
 
-	// private final long TIME_VOTE = 600;
+	private final long TIME_VOTE = 600;
 
 	private static HashMap<UUID, Vote> votes = new HashMap<UUID, Vote>();
 
@@ -52,6 +54,7 @@ public class MonkeyVote extends JavaPlugin implements Listener {
 	}
 
 	public void onDisable() {
+
 		for (UUID puuid : votes.keySet()) {
 			storeVotePlayer(puuid, votes.get(puuid).getTicksLeft(), "wevote.");
 
@@ -66,13 +69,31 @@ public class MonkeyVote extends JavaPlugin implements Listener {
 
 	}
 
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+
+		if (args.length < 1) {
+			return false;
+
+		}
+
+		vote(args[0]);
+
+		return true;
+
+	}
+
 	@EventHandler
 	public void onVote(VotifierEvent e) {
 
-		final String name = e.getVote().getUsername();
+		vote(e.getVote().getUsername());
+
+	}
+
+	public void vote(String playerName) {
 
 		@SuppressWarnings("deprecation")
-		Player oplayer = Bukkit.getServer().getPlayer(name);
+		Player oplayer = Bukkit.getServer().getPlayer(playerName);
 
 		// player doesn't exist
 		if (oplayer == null) {
@@ -130,7 +151,8 @@ public class MonkeyVote extends JavaPlugin implements Listener {
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, weTime, TIME_VOTE);
 
 		// allows the player to use WE
-		Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "perm player " + name + " set worldedit.*");
+		Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
+				"perm player " + player.getUniqueId() + " set worldedit.*");
 
 		// sends confirmation
 		player.sendMessage(ChatColor.GOLD + "You may now use WorldEdit for 30 minutes!");

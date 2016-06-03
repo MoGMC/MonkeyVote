@@ -37,7 +37,8 @@ public class Vote implements Runnable {
 
 		if (player != null) {
 
-			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "perm player " + player.getName() + " unset worldedit.*");
+			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
+					"perm player " + player.getUniqueId() + " unset worldedit.*");
 
 			if (player.isOnline()) {
 
