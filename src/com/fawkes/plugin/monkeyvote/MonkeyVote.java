@@ -17,9 +17,9 @@ import com.vexsoftware.votifier.model.VotifierEvent;
 
 public class MonkeyVote extends JavaPlugin implements Listener {
 
-	// private final long TIME_VOTE = 36000L;
+	 private final long TIME_VOTE = 36000L;
 
-	private final long TIME_VOTE = 600;
+	//private final long TIME_VOTE = 600;
 
 	private static HashMap<UUID, Vote> votes = new HashMap<UUID, Vote>();
 
