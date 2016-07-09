@@ -1,7 +1,0 @@
-name: MonkeyVote
-main: com.fawkes.plugin.monkeyvote.MonkeyVote
-version: 0.2
-commands:
-  sudovote:
-    usage: /sudovote <player>
-    permission: monkeyvote.sudovote
