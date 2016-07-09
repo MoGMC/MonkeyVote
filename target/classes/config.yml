@@ -1,1 +1,8 @@
-wevote: {}
+permissions:
+  - worldedit.*
+# duration measured in server ticks (20 ticks = 1 second)
+duration: 36000
+initialmessage: "&6Thank you for your vote! You may now use WorldEdit for thirty minutes."
+extendmessage: "&6Thank you for your vote! Thirty minutes have been added onto your remaining WorldEdit time."
+finishmessage: "&cYour time has run dry! Vote with /vote to receive more."
+voters: {}

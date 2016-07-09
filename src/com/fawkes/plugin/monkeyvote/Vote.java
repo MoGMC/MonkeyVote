@@ -2,74 +2,54 @@ package com.fawkes.plugin.monkeyvote;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
-
 public class Vote implements Runnable {
 
-	private UUID uuid;
-	private long startTime, duration;
-	private boolean cancelled = false;
+		private UUID uuid;
+		private long startTime, duration;
+		private boolean cancelled = false;
 
-	public Vote(UUID people, long startTime, long duration) {
+		public Vote(UUID people, long startTime, long duration) {
 
-		// duration in ticks
-		uuid = people;
+			// duration in ticks
+			uuid = people;
 
-		// ehh?
-		this.duration = duration;
-		this.startTime = startTime;
-
-	}
-
-	@Override
-	public void run() {
-
-		// if cancelled do nuffin
-		if (cancelled) {
-			return;
+			// ehh?
+			this.duration = duration;
+			this.startTime = startTime;
 
 		}
 
-		OfflinePlayer player = Bukkit.getServer().getOfflinePlayer(uuid);
+		@Override
+		public void run() {
 
-		if (player != null) {
-
-			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-					"perm player " + player.getUniqueId() + " unset worldedit.*");
-
-			if (player.isOnline()) {
-
-				Player online = (Player) player;
-
-				online.sendMessage(ChatColor.RED + "Your WorldEdit time has ran out!");
-				online.sendMessage(ChatColor.RED + "Vote again with /vote for more time!");
+			// if cancelled do nuffin
+			if (cancelled) {
+					return;
 
 			}
 
+			// sends them message if they are online
+
+			MonkeyVote.removePlayer(uuid, true);
+
 		}
 
-		MonkeyVote.removePlayer(uuid);
+		public void cancel() {
+			cancelled = true;
+			MonkeyVote.removePlayer(uuid, false);
 
-	}
+		}
 
-	public void cancel() {
-		cancelled = true;
-		MonkeyVote.removePlayer(uuid);
+		public long getTicksLeft() {
 
-	}
+			// 20 ticks in a second
+			// 1000 millis in a second
+			// therefore 20 ticks in 1000 millis
+			// 1000/20 = 50
+			// 50 millis per tick!
 
-	public long getTicksLeft() {
+			return duration - ((System.currentTimeMillis() - startTime) / 50);
 
-		// 20 ticks in a second
-		// 1000 millis in a second
-		// therefore 20 ticks in 1000 millis
-		// 1000/20 = 50
-		// 50 millis per tick!
+		}
 
-		return duration - ((System.currentTimeMillis() - startTime) / 50);
-
-	}
 }

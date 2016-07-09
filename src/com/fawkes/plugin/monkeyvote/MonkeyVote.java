@@ -1,6 +1,7 @@
 package com.fawkes.plugin.monkeyvote;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -8,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,151 +19,178 @@ import com.vexsoftware.votifier.model.VotifierEvent;
 
 public class MonkeyVote extends JavaPlugin implements Listener {
 
-	 private final long TIME_VOTE = 36000L;
+		// private final long TIME_VOTE = 600;
 
-	//private final long TIME_VOTE = 600;
+		private static HashMap<UUID, Vote> votes = new HashMap<UUID, Vote>();
 
-	private static HashMap<UUID, Vote> votes = new HashMap<UUID, Vote>();
+		static List<String> permissions;
+		static long duration;
+		static String initialMsg, extendMsg, finishMsg;
 
-	public void onEnable() {
+		FileConfiguration config;
 
-		saveDefaultConfig();
+		public void onEnable() {
 
-		// restores previous time that players had before a shutdown
-		/* fetch the players from "wevote" section of the config */
-		Set<String> WEStrings = getConfig().getConfigurationSection("wevote").getKeys(false);
+			saveDefaultConfig();
 
-		// loops through the list
-		for (String string : WEStrings) {
+			config = getConfig();
 
-			UUID person = UUID.fromString(string);
+			permissions = config.getStringList("permissions");
+			duration = config.getLong("duration");
 
-			long timeLeft = getConfig().getLong("wevote." + person.toString());
+			initialMsg = ChatColor.translateAlternateColorCodes('&', config.getString("initialmessage"));
+			extendMsg = ChatColor.translateAlternateColorCodes('&', config.getString("extendmessage"));
+			finishMsg = ChatColor.translateAlternateColorCodes('&', config.getString("finishmessage"));
 
-			getConfig().set("wevote." + person, null);
+			// restores previous time that players had before a shutdown
+			/* fetch the players from "wevote" section of the config */
+			Set<String> WEStrings = config.getConfigurationSection("voters").getKeys(false);
 
-			Vote vote = new Vote(person, System.currentTimeMillis(), timeLeft);
+			// loops through the list
+			for (String string : WEStrings) {
 
-			votes.put(person, vote);
+					UUID person = UUID.fromString(string);
 
-			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, vote, timeLeft);
+					long timeLeft = config.getLong("voters." + person.toString());
 
-		}
+					config.set("voters." + person, null);
 
-		// saves config
-		this.saveConfig();
+					Vote vote = new Vote(person, System.currentTimeMillis(), timeLeft);
 
-	}
+					votes.put(person, vote);
 
-	public void onDisable() {
+					Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, vote, timeLeft);
 
-		for (UUID puuid : votes.keySet()) {
-			storeVotePlayer(puuid, votes.get(puuid).getTicksLeft(), "wevote.");
+			}
 
-		}
-
-		this.saveConfig();
-
-	}
-
-	public void storeVotePlayer(UUID uuid, long timeLeft, String path) {
-		getConfig().set(path + uuid, timeLeft);
-
-	}
-
-	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
-		if (args.length < 1) {
-			return false;
+			// saves config
+			this.saveConfig();
 
 		}
 
-		vote(args[0]);
+		public void onDisable() {
 
-		return true;
+			for (UUID puuid : votes.keySet()) {
+					storeVotePlayer(puuid, votes.get(puuid).getTicksLeft(), "voters.");
 
-	}
+			}
 
-	@EventHandler
-	public void onVote(VotifierEvent e) {
-
-		vote(e.getVote().getUsername());
-
-	}
-
-	public void vote(String playerName) {
-
-		@SuppressWarnings("deprecation")
-		Player oplayer = Bukkit.getServer().getPlayer(playerName);
-
-		// player doesn't exist
-		if (oplayer == null) {
-			return;
+			this.saveConfig();
 
 		}
 
-		UUID uuid = oplayer.getUniqueId();
+		public void storeVotePlayer(UUID uuid, long timeLeft, String path) {
+			config.set(path + uuid, timeLeft);
 
-		Player player = (Player) oplayer;
+		}
 
-		// if player already has voted and is in the 30 min range
-		if (votes.containsKey(uuid)) {
+		@Override
+		public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-			// gets the existing VT var
-			Vote existing = votes.get(uuid);
+			if (args.length < 1) {
+					return false;
 
-			// cancels the existing VT var so it doesn't run
-			existing.cancel();
+			}
 
-			// makes new VT
-			Vote newVT = new Vote(uuid, System.currentTimeMillis(), TIME_VOTE + existing.getTicksLeft());
+			vote(args[0]);
 
-			// removes old VT
-			votes.remove(uuid);
+			return true;
 
-			// adds VT to list
-			votes.put(uuid, newVT);
+		}
 
-			// schedules the VT
-			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, newVT, TIME_VOTE + existing.getTicksLeft());
+		@EventHandler
+		public void onVote(VotifierEvent e) {
+
+			vote(e.getVote().getUsername());
+
+		}
+
+		public void vote(String playerName) {
+
+			@SuppressWarnings("deprecation")
+			Player player = Bukkit.getServer().getPlayer(playerName);
+
+			// player doesn't exist
+			if (player == null) {
+					return;
+
+			}
+
+			UUID uuid = player.getUniqueId();
+
+			// if player already has voted and is in the 30 min range
+			if (votes.containsKey(uuid)) {
+
+					// gets the existing VT var
+					Vote existing = votes.get(uuid);
+
+					// cancels the existing VT var so it doesn't run
+					existing.cancel();
+
+					// makes new VT
+					Vote newVT = new Vote(uuid, System.currentTimeMillis(), duration + existing.getTicksLeft());
+
+					// adds VT to list
+					votes.put(uuid, newVT);
+
+					// schedules the VT
+					Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, newVT, duration + existing.getTicksLeft());
+
+					// sends confirmation
+					player.sendMessage(extendMsg);
+
+					return;
+
+			}
+
+			/*
+			 * ANNOUNCE TO LE SERVER THAT SUCH AND SUCH HAS VOTED BLA BLA YEY P.S. make sure to change the 600L to whatever time you want (in server ticks)
+			 */
+
+			// makes new Vote var
+			Vote weTime = new Vote(uuid, System.currentTimeMillis(), duration);
+
+			// puts in in le list
+			votes.put(uuid, weTime);
+
+			// 36000 ticks in 30 minutes
+
+			// makes le Vote var run in 30 minutes
+			Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, weTime, duration);
+
+			for (String permission : permissions) {
+					// allows the player to use WE
+					Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "perm player " + player.getUniqueId() + " set " + permission);
+
+			}
 
 			// sends confirmation
-			player.sendMessage(ChatColor.GOLD + "30 minutes have been added onto your remaining WorldEdit time!");
-
-			return;
+			player.sendMessage(initialMsg);
 
 		}
 
-		/*
-		 * ANNOUNCE TO LE SERVER THAT SUCH AND SUCH HAS VOTED BLA BLA YEY P.S.
-		 * make sure to change the 600L to whatever time you want (in server
-		 * ticks)
-		 */
+		// boolean if the person wants to unset the permission (for extending purposes)
+		public static void removePlayer(UUID uuid, boolean unset) {
 
-		// makes new Vote var
-		Vote weTime = new Vote(uuid, System.currentTimeMillis(), TIME_VOTE);
+			if (unset) {
 
-		// puts in in le list
-		votes.put(uuid, weTime);
+					Player player = Bukkit.getPlayer(uuid);
 
-		// 36000 ticks in 30 minutes
+					if (player != null) {
 
-		// makes le Vote var run in 30 minutes
-		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(this, weTime, TIME_VOTE);
+						player.sendMessage(finishMsg);
 
-		// allows the player to use WE
-		Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-				"perm player " + player.getUniqueId() + " set worldedit.*");
+					}
 
-		// sends confirmation
-		player.sendMessage(ChatColor.GOLD + "You may now use WorldEdit for 30 minutes!");
+					for (String permission : permissions) {
+						Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "perm player " + uuid + " unset " + permission);
 
-	}
+					}
 
-	public static void removePlayer(UUID uuid) {
-		votes.remove(uuid);
+			}
 
-	}
+			votes.remove(uuid);
+
+		}
 
 }
