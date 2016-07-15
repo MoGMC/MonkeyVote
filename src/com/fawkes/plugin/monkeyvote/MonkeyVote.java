@@ -66,6 +66,9 @@ public class MonkeyVote extends JavaPlugin implements Listener {
 			// saves config
 			this.saveConfig();
 
+			// registeres eventS
+			this.getServer().getPluginManager().registerEvents(this, this);
+
 		}
 
 		public void onDisable() {
